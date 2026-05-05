@@ -10,6 +10,7 @@ public class SeqFile {
     HashSet<String> sequences;
     boolean read;
     String sequence;
+    LinkedHashSet<String> orderedSeq;
 
 
     /**
@@ -18,6 +19,7 @@ public class SeqFile {
      * @param filename
      */
     public SeqFile(String filename) {
+        orderedSeq = new LinkedHashSet<>();
         sequences = new HashSet<>();
         File f = new File(filename);
         StringBuilder partLine = new StringBuilder();
@@ -37,14 +39,14 @@ public class SeqFile {
                 }else{
                     if(!partLine.isEmpty()){
                         sequence = partLine.toString();
-                        sequences.add(sequence);
+                        orderedSeq.add(sequence);
                         partLine.delete(0, partLine.length());
                     }
                 }
             }sequence = partLine.toString();
-            sequences.add(sequence);
+            orderedSeq.add(sequence);
             partLine.delete(0, partLine.length());
-            if(!sequences.isEmpty()) read = true;
+            if(!orderedSeq.isEmpty()) read = true;
         } catch (IOException e) {
             isValid();
         }
@@ -85,6 +87,8 @@ public class SeqFile {
      * @return The sequences read from the FASTA file, or an empty HashSet if isValid() is false.
      */
     public HashSet<String> getSequences() {
+        sequences = new HashSet<>(orderedSeq);
+        if(!isValid()) return new HashSet<>();
         return sequences;
 
 
@@ -99,7 +103,7 @@ public class SeqFile {
         if (!isValid()) {
             return "";
         } else {
-            String[] array = getSequences().toArray(new String[getSequences().size()]);
+            String[] array = orderedSeq.toArray(new String[getSequences().size()]);
             return array[0];
         }
     }
