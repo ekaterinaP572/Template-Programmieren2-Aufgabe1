@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.util.*;
 
 public class SeqFile {
-    Set<String> sequences;
+    HashSet<String> sequences;
     boolean read;
-    String firstSeq;
+    String sequence;
 
 
     /**
@@ -18,17 +18,32 @@ public class SeqFile {
      * @param filename
      */
     public SeqFile(String filename) {
-        sequences = new LinkedHashSet<>();
+        sequences = new HashSet<>();
         File f = new File(filename);
+        StringBuilder partLine = new StringBuilder();
         try {
             BufferedReader r = new BufferedReader(new FileReader(f));
+            String firstLetter = "";
             r.readLine();
             while (r.ready() ) {
-                String sequence = r.readLine();
-                sequences.add(sequence);
-
-
-            }
+                String line = r.readLine();
+                String line1 = line.trim();
+                String[] splitLine = line1.split("");
+                for(int i = 0; i<splitLine.length; i++){
+                    firstLetter = splitLine[0];
+                }
+                if(!firstLetter.equals(">")) {
+                    partLine.append(line1);
+                }else{
+                    if(!partLine.isEmpty()){
+                        sequence = partLine.toString();
+                        sequences.add(sequence);
+                        partLine.delete(0, partLine.length());
+                    }
+                }
+            }sequence = partLine.toString();
+            sequences.add(sequence);
+            partLine.delete(0, partLine.length());
             if(!sequences.isEmpty()) read = true;
         } catch (IOException e) {
             isValid();
@@ -70,9 +85,7 @@ public class SeqFile {
      * @return The sequences read from the FASTA file, or an empty HashSet if isValid() is false.
      */
     public HashSet<String> getSequences() {
-        HashSet<String> sequenc = new HashSet<>();
-        sequenc.add(firstSeq);
-        return sequenc;
+        return sequences;
 
 
        /// return new HashSet<>(sequences);
@@ -83,11 +96,12 @@ public class SeqFile {
      * @return The first sequence read from the FASTA file, or an empty String if isValid() is false.
      */
     public String getFirstSequence() {
-
-        List<String> firstLine = new ArrayList<>(sequences);
-        if(!isValid()){return "";}
-         firstSeq = firstLine.get(0) + firstLine.get(1) + firstLine.get(2);
-        return firstSeq;
+        if (!isValid()) {
+            return "";
+        } else {
+            String[] array = getSequences().toArray(new String[getSequences().size()]);
+            return array[0];
+        }
     }
 
     /**
